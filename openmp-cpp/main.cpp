@@ -61,83 +61,91 @@ void quickSort(vector<int> *arreglo, int inicio, int fin);
  * @return Devuelve el código de error
  */
 int main(int argc, char** argv) {
-    //string ruta(argv[1]);
-    ifstream entrada("/media/compartida/puntajes.csv");
-    if(entrada){
-        vector<int> nem,ranking,matematica,lenguaje,ciencias,historia;
-        vector<vector<int> > datos;
+    //Se verifica que se ingresó la ruta del archivo con los puntajes
+    if(argc > 1){
+        string ruta(argv[1]);
+        ifstream entrada(ruta);
+        //Se verifica que exista tal archivo
+        if(entrada){
+            //Vectores con los puntajes
+            vector<int> nem,ranking,matematica,lenguaje,ciencias,historia;
+            vector<vector<int> > datos;
 #pragma omp parallel
-        {
-#pragma omp single
             {
-                for(string linea; getline(entrada, linea);){
+#pragma omp single
+                {
+                    for(string linea; getline(entrada, linea);){
 #pragma omp task
-                    {
-                        vector<int> puntajes = obtenerPuntajes(linea);
-                        if(!linea.empty()){
+                        {
+                            vector<int> puntajes = obtenerPuntajes(linea);
+                            if(!linea.empty()){
 #pragma omp critical        
-                            {
-                            nem.push_back(puntajes.at(1));
-                            ranking.push_back(puntajes.at(2));
-                            matematica.push_back(puntajes.at(3));
-                            lenguaje.push_back(puntajes.at(4));
-                            ciencias.push_back(puntajes.at(5));
-                            historia.push_back(puntajes.at(6));
+                                {
+                                nem.push_back(puntajes.at(1));
+                                ranking.push_back(puntajes.at(2));
+                                matematica.push_back(puntajes.at(3));
+                                lenguaje.push_back(puntajes.at(4));
+                                ciencias.push_back(puntajes.at(5));
+                                historia.push_back(puntajes.at(6));
+                                }
+                                
                             }
+                            puntajes.clear();
                             
                         }
-                        puntajes.clear();
-                        
+                    }
+                }
+            }
+            int tamano = nem.size();
+            // Se guardan los puntajes dentro del array con todos los datos
+            datos.push_back(nem);
+            datos.push_back(ranking);
+            datos.push_back(matematica);
+            datos.push_back(lenguaje);
+            datos.push_back(ciencias);
+            datos.push_back(historia);
+
+            vector<double> promedios;
+            vector<double> desvSs;
+            vector<int> modas;
+            vector<double> medianas;
+
+            promedios.resize(6);
+            desvSs.resize(6);
+            modas.resize(6);
+            medianas.resize(6);
+
+            string names[] = {"NEM","RANKING","MATEMATICA","LENGUAJE","CIENCIAS","HISTORIA"};
+#pragma omp parallel
+            {
+#pragma omp for
+                for(int i=0;i<6;i++){
+                    quickSort(&datos[i],0,tamano-1);
+                    promedios[i] = promedio(datos[i],tamano);
+                }
+            }
+
+#pragma omp parallel
+            {
+#pragma omp for
+                for(int i = 0; i<6; i++){
+                    desvSs[i] = desvS(datos[i],tamano,promedios[i]);
+                    modas[i]=moda(datos[i],tamano);
+                    medianas[i]=mediana(datos[i],tamano);
+#pragma omp critical
+                    {
+                        cout<<endl<<"="<<names[i]<<"="<<endl<<"Promedio: "<<promedios[i]<<endl<<"Desviaci�n Estandar: " <<desvSs[i]<<endl<<"Moda: "<<modas[i]<<endl<<"Mediana: "<<medianas[i]<<endl;
                     }
                 }
             }
         }
-        int tamano = nem.size();
-
-        datos.push_back(nem);
-        datos.push_back(ranking);
-        datos.push_back(matematica);
-        datos.push_back(lenguaje);
-        datos.push_back(ciencias);
-        datos.push_back(historia);
-
-        vector<double> promedios;
-        vector<double> desvSs;
-        vector<int> modas;
-        vector<double> medianas;
-
-        promedios.resize(6);
-        desvSs.resize(6);
-        modas.resize(6);
-        medianas.resize(6);
-
-        string names[] = {"NEM","RANKING","MATEMATICA","LENGUAJE","CIENCIAS","HISTORIA"};
-#pragma omp parallel
-        {
-#pragma omp for
-            for(int i=0;i<6;i++){
-                quickSort(&datos[i],0,tamano-1);
-                promedios[i] = promedio(datos[i],tamano);
-            }
+        else{
+            cout<<"Es necesario subir un archivo primero..."<<endl;
+            return 1;
         }
-
-#pragma omp parallel
-        {
-#pragma omp for
-            for(int i = 0; i<6; i++){
-                desvSs[i] = desvS(datos[i],tamano,promedios[i]);
-                modas[i]=moda(datos[i],tamano);
-                medianas[i]=mediana(datos[i],tamano);
-#pragma omp critical
-                {
-                    cout<<endl<<"="<<names[i]<<"="<<endl<<"Promedio: "<<promedios[i]<<endl<<"Desviaci�n Estandar: " <<desvSs[i]<<endl<<"Moda: "<<modas[i]<<endl<<"Mediana: "<<medianas[i]<<endl;
-                }
-            }
-        }
-        cout<<endl<<tamano<<endl;
     }
     else{
-        cout<<"Es necesario subir un archivo primero..."<<endl;
+        cout<<"No se ha ingresado la ruta del archivo puntajes..."<<endl;
         return 1;
     }
     
