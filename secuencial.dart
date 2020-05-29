@@ -78,19 +78,9 @@ void integrantes(){
   print ("Israel Ramirez Cardoso");
   print ("Humberto Román Matamoros");
 }
-double promedio (List a){
-  double valor = 0;
-  for (int i = 0;i<a.length;i++){
-    valor = valor + a[i];
-  }
-  return valor/a.length;
-}
-
-
- 
 
 main() {
-  stdout.write("Ingree la ruta del archivo: ");
+  stdout.write("Ingrese la ruta del archivo: ");
   String ruta =stdin.readLineSync();
   final file = new File(ruta);
   Stream<List<int>> inputStream = file.openRead();
