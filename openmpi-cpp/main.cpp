@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define LARGO 100;
+#define LARGO 100
 
 /**
  * Muestra a los participantes del grupo
@@ -47,6 +47,12 @@ double moda(vector<int> arreglo, int fin);
 float mediana(vector<int> arreglo, int fin);
 /**
  * Funcion para separar los datos de una linea string separada por ";"
+ * @param linea linea con puntajes 
+ * @return devuelve un array vector con los datos separados de la linea
+ */
+vector<string> splitter(string linea);
+/**
+ * Funcion para separar los datos de una linea string separada por ";"
  * @param linea linea con puntajes y rut
  * @return devuelve un array vector con los datos separados de la linea
  */
@@ -76,7 +82,6 @@ int main(int argc, char** argv) {
     int mi_rango;
     int procesadores;
     int maestro = 0;
-    int escritor = 1;
     int tag =0;
 
     MPI_Status estado;
@@ -90,8 +95,8 @@ int main(int argc, char** argv) {
         MPI_Comm_rank(MPI_COMM_WORLD, &mi_rango);
         MPI_Comm_size(MPI_COMM_WORLD, &procesadores);
 
-        if(procesadores < 3){
-            cout<<endl<<"Se re quiere un mínimo de 3 procesadores..."<<<endl;
+        if(procesadores < 2){
+            cout<<endl<<"Se re quiere un mínimo de 2 procesadores..."<<endl;
             return EXIT_FAILURE;
         }
 
@@ -113,12 +118,12 @@ int main(int argc, char** argv) {
                                 if(!linea.empty()){
 #pragma omp critical        
                                     {
-                                    nem << puntajes.at(1);
-                                    ranking << puntajes.at(2);
-                                    matematica << puntajes.at(3);
-                                    lenguaje << puntajes.at(4);
-                                    ciencias << puntajes.at(5);
-                                    historia << puntajes.at(6);
+                                    nem << puntajes.at(1)<<'\n';
+                                    ranking << puntajes.at(2)<<'\n';
+                                    matematica << puntajes.at(3)<<'\n';
+                                    lenguaje << puntajes.at(4)<<'\n';
+                                    ciencias << puntajes.at(5)<<'\n';
+                                    historia << puntajes.at(6)<<'\n';
                                     }
                                     
                                 }
@@ -134,14 +139,14 @@ int main(int argc, char** argv) {
                 lenguaje.close();
                 ciencias.close();
                 historia.close();
-
-                for(int procesador=2,file=0;file < 6;file++,procesador++){
+            
+                for(int procesador=1,file=0;file < 6;file++,procesador++){
                     if(procesador >= procesadores){
-                        procesador = 2;
+                        procesador = 1;
                     }
                     MPI_Send((char *) files[file].c_str(),files[file].length() + 1, MPI_CHAR, procesador, tag, MPI_COMM_WORLD);
                 }
-                for(int procesador=2;procesador < procesadores;procesador++){
+                for(int procesador=1;procesador < procesadores;procesador++){
                     
                     MPI_Send((char *) stop.c_str(),stop.length() + 1, MPI_CHAR, procesador, tag, MPI_COMM_WORLD);
                 }
@@ -153,20 +158,24 @@ int main(int argc, char** argv) {
             for(int i = 0; i< procesadores;i++){
                 isend.push_back(false);
             }
-            vector<string> prints;
+            isend[0]=true;
             while(!isEnd(isend)){
-                for(int i =0;i< procesadores;i++){
-                    char* msg = (char *) calloc (LARGO, sizeof (char));
-                    MPI_Recv(msg, LARGO, MPI_CHAR, maestro, tag, MPI_COMM_WORLD, &estado);
-                    string info(msg);
-                    if(!info.empty()){
-                        if(stop.compare(info)==0){
-                            isend[i]=true;
-                        }
-                        else{
-                            prints.push_back(info);
+                for(int i =1;i< procesadores;i++){
+                    if(!isend[i]){
+                        char* msg = (char *) calloc (LARGO, sizeof (char));
+                        MPI_Recv(msg, LARGO, MPI_CHAR, i, tag, MPI_COMM_WORLD, &estado);
+                        string info(msg);
+                        if(!info.empty()){
+                            if(stop.compare(info)==0){
+                                isend[i]=true;
+                            }
+                            else{
+                                vector<string> split = splitter(info);
+                                cout<<endl<<"="<<split[0]<<"="<<endl<<"Promedio: "<<split[1]<<endl<<"Desviación estandar: "<<split[2]<<endl<<"Moda: "<<split[3]<<endl<<"Mediana: "<<split[4]<<endl;
+                            }
                         }
                     }
+                    
                 }
             }
         }
@@ -186,15 +195,13 @@ int main(int argc, char** argv) {
                 }
                 free(msg);
             }
-            vector<ifstream> archivos;
+            
             for(int i = 0; i < file.size(); i++){
-                archivos.push_back(ifstream(file[i]+".csv"));
-            }
-            for(int i = 0; i < archivos.size(); i++){
+                ifstream archivo(file[i]+".csv");
                 vector<int> puntos;
-                for(string linea; getline(archivos[i],linea);){
+                for(string linea; getline(archivo,linea);){
                     if(!linea.empty()){
-                        puntos.push_back(atoi(linea));
+                        puntos.push_back(atoi(linea.c_str()));
                     }
                 }
                 int tamano = puntos.size();
@@ -206,12 +213,19 @@ int main(int argc, char** argv) {
 
                 string info = file[i]+";"+to_string(prom)+";"+to_string(dvs)+";"+to_string(mod)+";"+to_string(media);
                 MPI_Send((char *) info.c_str(), info.length()+1, MPI_CHAR, maestro, tag, MPI_COMM_WORLD);
-                archivos[i].close();
+                
+                archivo.close();
+
+                ofstream test(file[i]+".csv");
+                test << info;
+                test.close();
 
             }
             MPI_Send((char *) stop.c_str(),stop.length() + 1, MPI_CHAR, maestro, tag, MPI_COMM_WORLD);
         }
+        
     }
+    MPI_Finalize();
         
         
     return 0;
@@ -223,7 +237,17 @@ void participante(){
     cout<<"Humberto Román Matamoros"<<endl;
     cout<<"Victor Araya Romero"<<endl;
 }
+vector<string> splitter(std::string linea) {
+    vector<string> arreglo;
+    std::stringstream ss(linea);
+    std::string item;
 
+    while (std::getline(ss, item, ';')) {
+        arreglo.push_back(item.c_str());
+    }
+
+    return arreglo;
+}
 vector<int> obtenerPuntajes(std::string linea) {
     vector<int> arreglo;
     std::stringstream ss(linea);
