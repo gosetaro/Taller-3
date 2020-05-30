@@ -64,8 +64,9 @@ int main(int argc, char** argv){
         string ruta(argv[1]);
         ifstream entrada(ruta);
         if(entrada){
+            // Apartado de obtención de datos //
             int contador = 0;
-
+            //Se obtienen los datos y se guardan en vectores, según la columna que se ingresa
             vector<int> nem, ranking, matematica, lenguaje, ciencias, historia;
             for(string linea; getline(entrada, linea);){
                 if(!linea.empty()){
@@ -79,7 +80,8 @@ int main(int argc, char** argv){
                     contador++;
                 }
             }
-            //Se ordenan los datos de cada puntajes
+            // fin: Apartado de obtención de datos //
+            // Apartado de cálculo e impresión de datos //
             quickSort(&nem,0,contador-1);
             quickSort(&ranking,0,contador-1);
             quickSort(&matematica,0,contador-1);
@@ -99,6 +101,7 @@ int main(int argc, char** argv){
             cout<<endl<<"=CIENCIAS="<<endl<<"Promedio: "<<promedioCiencias << endl << "Desviaci�n Estandar: " <<desvS(ciencias,contador, promedioCiencias)<<endl<<"Moda: "<<moda(ciencias,contador)<<endl<<"Mediana: "<<mediana(ciencias,contador)<<endl;
             cout<<endl<<"=HISTORIA="<<endl<<"Promedio: "<<promedioHistoria << endl << "Desviaci�n Estandar: " <<desvS(historia,contador, promedioHistoria)<<endl<<"Moda: "<<moda(historia,contador)<<endl<<"Mediana: "<<mediana(historia,contador)<<endl;
             return 0;
+            // fin: Apartado de cálculo e impresión de datos //
         }
         else{
             cout<<endl<<"No se pudo cargar el archivo..."<<endl;
@@ -110,7 +113,7 @@ int main(int argc, char** argv){
         return 1;
     }
 }
-
+// Apartado de funciónes //
 void participante(){
     cout<<endl<<"==== Participantes ===="<<endl;
     cout<<"Israel Ramirez Cardoso"<<endl;
@@ -205,3 +208,4 @@ float mediana(vector<int> arreglo, int fin){
         return (limitIzq+limitDer)/2;
     }
 }
+// fin: Apartado de funciones //
