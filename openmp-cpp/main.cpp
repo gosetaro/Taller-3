@@ -61,13 +61,11 @@ void quickSort(vector<int> *arreglo, int inicio, int fin);
  * @return Devuelve el código de error
  */
 int main(int argc, char** argv) {
-    //Se verifica que se ingresó la ruta del archivo con los puntajes
     if(argc > 1){
         string ruta(argv[1]);
         ifstream entrada(ruta);
-        //Se verifica que exista tal archivo
         if(entrada){
-            //Vectores con los puntajes
+            // Apartado de obtención y clasificación de datos //
             vector<int> nem,ranking,matematica,lenguaje,ciencias,historia;
             vector<vector<int> > datos;
 #pragma omp parallel
@@ -96,8 +94,9 @@ int main(int argc, char** argv) {
                     }
                 }
             }
+            // fin: Apartado de obtención y clasificación de datos //
+            // Apartado de cálculo de datos //
             int tamano = nem.size();
-            // Se guardan los puntajes dentro del array con todos los datos
             datos.push_back(nem);
             datos.push_back(ranking);
             datos.push_back(matematica);
@@ -114,7 +113,8 @@ int main(int argc, char** argv) {
             desvSs.resize(6);
             modas.resize(6);
             medianas.resize(6);
-
+            // fin: Apartado de cálculo de datos //
+            // Apartado de impresión de datos //
             string names[] = {"NEM","RANKING","MATEMATICA","LENGUAJE","CIENCIAS","HISTORIA"};
 #pragma omp parallel
             {
@@ -138,6 +138,7 @@ int main(int argc, char** argv) {
                     }
                 }
             }
+            // fin: Apartado de impresión de datos //
         }
         else{
             cout<<"Es necesario subir un archivo primero..."<<endl;
@@ -151,7 +152,7 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-
+// Apartado de funciones //
 void participante(){
     cout<<endl<<"==== Participantes ===="<<endl;
     cout<<"Israel Ramirez Cardoso"<<endl;
@@ -246,3 +247,4 @@ float mediana(vector<int> arreglo, int fin){
         return (limitIzq+limitDer)/2;
     }
 }
+// fin: Apartado de funciones //
