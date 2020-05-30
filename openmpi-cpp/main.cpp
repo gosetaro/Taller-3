@@ -90,22 +90,20 @@ int main(int argc, char** argv) {
     string files[6] = {"nem","ranking","matematica","lenguaje","ciencias","historia"};
     //Se verifica que se ingresó la ruta del archivo con los puntajes
     if(argc > 1){
-
+        // Inicialización de openMPI //
         MPI_Init(&argc, &argv);
         MPI_Comm_rank(MPI_COMM_WORLD, &mi_rango);
         MPI_Comm_size(MPI_COMM_WORLD, &procesadores);
-
+        // fin: Inicialización de openMPI //
         if(procesadores < 2){
             cout<<endl<<"Se re quiere un mínimo de 2 procesadores..."<<endl;
             return EXIT_FAILURE;
         }
-
+        // Apartado de obtención y clasificación de datos //
         if(mi_rango == 0){
             string ruta(argv[1]);
             ifstream entrada(ruta);
-            //Se verifica que exista tal archivo
             if(entrada){
-                //Vectores con los puntajes
                 ofstream nem("nem.csv"),ranking("ranking.csv"),matematica("matematica.csv"),lenguaje("lenguaje.csv"),ciencias("ciencias.csv"),historia("historia.csv");
 #pragma omp parallel
                 {
@@ -139,7 +137,8 @@ int main(int argc, char** argv) {
                 lenguaje.close();
                 ciencias.close();
                 historia.close();
-            
+
+                // Se indica a cada procesador que archivo/s deben calcular
                 for(int procesador=1,file=0;file < 6;file++,procesador++){
                     if(procesador >= procesadores){
                         procesador = 1;
@@ -153,6 +152,8 @@ int main(int argc, char** argv) {
                 entrada.close();
             }
         }
+        // fin: Apartado de obtención y clasificación de datos //
+        // Apartado de impresión de cálculos //
         if(mi_rango == 0){
             vector<bool> isend;
             for(int i = 0; i< procesadores;i++){
@@ -179,7 +180,10 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        // fin: Apartado de impresión de cálculos //
+        // Apartado de cálculos //
         else{
+            // Se recibe las indicaciones de qué archivos es necesario calcular
             vector<string> file;
             while(true){
                 char* msg = (char *) calloc (LARGO, sizeof (char));
@@ -195,7 +199,7 @@ int main(int argc, char** argv) {
                 }
                 free(msg);
             }
-            
+            // Se abre el archivo correspondiente y se realizan los cálculos, una vez terminados se reenvian
             for(int i = 0; i < file.size(); i++){
                 ifstream archivo(file[i]+".csv");
                 vector<int> puntos;
@@ -216,13 +220,10 @@ int main(int argc, char** argv) {
                 
                 archivo.close();
 
-                ofstream test(file[i]+".csv");
-                test << info;
-                test.close();
-
             }
             MPI_Send((char *) stop.c_str(),stop.length() + 1, MPI_CHAR, maestro, tag, MPI_COMM_WORLD);
         }
+        // fin: Apartado de cálculos //
         
     }
     MPI_Finalize();
@@ -230,7 +231,7 @@ int main(int argc, char** argv) {
         
     return 0;
 }
-
+// Apartado de funciones //
 void participante(){
     cout<<endl<<"==== Participantes ===="<<endl;
     cout<<"Israel Ramirez Cardoso"<<endl;
@@ -344,3 +345,4 @@ bool isEnd(vector<bool> procesadores){
     }
     return true;
 }
+// fin: Apartado de funciones //
