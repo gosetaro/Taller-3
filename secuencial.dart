@@ -135,11 +135,11 @@ main() {
         ciencias.sort();
         lenguaje.sort();
         imprimir_datos(promedio_nem, desviacion_nem,moda(nem),mediana(nem),"NEM");
-        imprimir_datos(promedio_ranking, desviacion_ranking,moda(ranking),mediana(ranking),"NEM");
-        imprimir_datos(promedio_matematica, desviacion_matematica,moda(matematica),mediana(matematica),"NEM");
-        imprimir_datos(promedio_lenguaje, desviacion_lenguaje,moda(lenguaje),mediana(lenguaje),"NEM");
-        imprimir_datos(promedio_ciencias, desviacion_ciencias,moda(ciencias),mediana(ciencias),"NEM");
-        imprimir_datos(promedio_historia, desviacion_historia,moda(historia),mediana(historia),"NEM");
+        imprimir_datos(promedio_ranking, desviacion_ranking,moda(ranking),mediana(ranking),"RANKING");
+        imprimir_datos(promedio_matematica, desviacion_matematica,moda(matematica),mediana(matematica),"MATEMATICA");
+        imprimir_datos(promedio_lenguaje, desviacion_lenguaje,moda(lenguaje),mediana(lenguaje),"LENGUAJE");
+        imprimir_datos(promedio_ciencias, desviacion_ciencias,moda(ciencias),mediana(ciencias),"CIENCIAS");
+        imprimir_datos(promedio_historia, desviacion_historia,moda(historia),mediana(historia),"HISTORIA");
 
         integrantes();
         },
